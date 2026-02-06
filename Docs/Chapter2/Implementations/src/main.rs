@@ -1,7 +1,69 @@
 use std::collections::{HashMap, HashSet}; 
 use std::io::{stdin, stdout, Write};
 
+/***
+ * 
+ * 
+    struct Rectangle{
+
+    }
+
+ * 
+ * 
+ * 
+ * ***/
+
+struct User{
+
+    name: String,
+    ti: u64, 
+    email: String,
+    sign_in_count: u64,
+
+}
+
+
+fn build_user(email: String, name: String) -> User{
+
+    // Función que retorna un Usuario con name = name e email = email
+
+    User{
+
+        name,
+        ti:123,
+        email,
+        sign_in_count:1,
+    }
+
+}
+
 fn main() {
+
+
+    let width = 30;
+    let height = 50;
+
+    println!("The area of the triangle is {} square pixels", width*height/2);
+    
+    let user1 = User {
+
+        name: String::from("Carmen Johana Calderón Chona"),
+        email: String::from("carmenj@gmail.com"),
+        ti: 12345678,
+        sign_in_count:1,
+    };
+
+    let user2 = User{
+        email: String::from("user2@gmail.com"),
+        ..user1
+    };
+
+
+    println!("The value for the second user is: {0}", user2.email);
+
+    println!("The value for the first user is: {0}", user1.ti); //Aquí el único valor que no se podría volver a llamar es el de user1.name
+
+    
     let mut x = 5;
     println!("The value of x is: {x}");
     x = 6;
@@ -108,7 +170,7 @@ fn main() {
 
     stdin().read_line(&mut s).expect("Did not enter a correct string");
 
-    println!("{}", s[0]);
+    //println!("{}", s[0]);
 
 }
 

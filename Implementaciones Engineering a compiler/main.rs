@@ -135,6 +135,135 @@ impl Automata{
 
 	}
 
+	fn regex_to_automaton(regex: &str) -> Automata{
+
+
+		let mut start: Node = Node{
+
+		acceptation: false,
+		transitions: HashMap::from([]),
+		// e_transitions: Vec::<usize>::from([]),
+		e_transitions: Vec::new(), //More idiomatic
+
+		};
+
+		let mut aut = Automata{
+
+		states: vec![start],
+		alphabet: vec![],
+
+		};
+
+		let parts = regex.split('|');
+		let mut n: usize = 0;
+
+		// start.e_transitions.push(n+1); No se puede hacer
+		aut.states[0].e_transitions.push(n + 1);
+
+		for part in parts {
+
+		n+=1;
+		//let mut INI_CHAR = "";
+		/***
+		let mut current_state: Node = Node{
+
+		acceptation: false,
+		transitions: HashMap::from([(String:.from(), Vec::<usize>::from())]),
+		e_transitions:Vec::<usize>::from([]),
+
+		};
+		***/
+
+		// let mut INI_PAR = false;
+		let mut open_par: Vec<usize> = Vec::new();
+
+		for c in part.chars(){
+
+
+
+
+			//if (c != "(" && c != "*" && c != ")"){
+			if c != '(' && c != '*' && c != ')'{ //Comparación correcta con chars
+
+			let new_state: Node = Node{
+
+			acceptation: false,
+			// transitions: HashMap::from([(c.to_string(), Vec::<usize>::from([n+1]), vec![n + 1])]),
+			transitions: HashMap::from([(c.to_string(),vec![n + 1])]), // More idiomatic
+			e_transitions:Vec::<usize>::from([]),
+			
+			};
+
+							
+			aut.states.push(new_state);
+
+			}
+			else if c == '('{
+
+			open_par.push(n+1);
+
+			}
+			else if c == '*'{  
+			/***
+			 
+			if let Some(&number) = open_par.last(){
+
+			let new_state: Node = Node{
+
+			acceptation: false,
+			transitions: HashMap::from([(states[number].transitions[0].to_string(), Vec::<usize>::from([number]))]),
+			e_transitions:Vec::<usize>::from([]),
+				
+				};
+				
+				aut.states.push(new_state);
+
+			} else{
+
+			println!("There's no last element");
+
+			}
+
+			open_par.pop();
+
+			}
+			***/
+			if let Some(&number) = open_par.last() {
+
+				if let Some(key) = aut.states[number].transitions.keys().next() {
+
+					let new_state: Node = Node {
+
+						acceptation: false,
+						transitions: HashMap::from([(key.clone(), vec![number])]),
+						e_transitions: Vec::new(),
+
+					};
+
+					aut.states.push(new_state);
+
+				}
+
+			} else {
+
+				println!("There's no last element");
+
+			}
+
+
+
+		}
+			n+=1;
+		}
+
+					
+
+}
+
+return aut
+
+}
+
 }
 
 

@@ -89,7 +89,7 @@ impl Automata{
 				e_transitions: Vec::<usize>::new(),
 			};
 
-			q.iter().for_each(|x| if self.accept_states.contains(x) {new_node.acceptation = true; new_automata.accept_states.push(*x)});
+			q.iter().for_each(|x| if self.accept_states.contains(x) &&  !new_automata.accept_states.contains(x) {new_node.acceptation = true; new_automata.accept_states.push(*x)});
 
 			for a in self.alphabet.clone() {
 				let mut states: Vec<usize> = Vec::<usize>::new();
@@ -158,11 +158,12 @@ impl Automata{
 		let mut n: usize = 0;
 
 		// start.e_transitions.push(n+1); No se puede hacer
-		aut.states[0].e_transitions.push(n + 1);
+		
 
 		for part in parts {
-
 		n+=1;
+		aut.states[0].e_transitions.push(n - 1);
+		
 		//let mut INI_CHAR = "";
 		/***
 		let mut current_state: Node = Node{
@@ -200,7 +201,7 @@ impl Automata{
 			}
 			else if c == '('{
 
-			open_par.push(n+1);
+				open_par.push(n+1);
 
 			}
 			else if c == '*'{  
@@ -235,12 +236,13 @@ impl Automata{
 					let new_state: Node = Node {
 
 						acceptation: false,
-						transitions: HashMap::from([(key.clone(), vec![number])]),
+						transitions: HashMap::from([(key.clone(), vec![number+1])]),
 						e_transitions: Vec::new(),
 
 					};
 
 					aut.states.push(new_state);
+					// Delete the last one
 
 				}
 

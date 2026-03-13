@@ -292,13 +292,11 @@ impl Automata{
 			
 			
 			let mut new_node = Node{
-				
 				transitions: HashMap::<String, Vec<usize>>::new(),
 				e_transitions: Vec::<usize>::new(),
 			};
 
-			q.iter().for_each(|x| if self.accept_states.contains(x) &&  !new_automata.accept_states.contains(x) {new_node.acceptation = true; new_automata.accept_states.push(*x)});
-
+			
 			for a in self.alphabet.clone() {
 				let mut states: Vec<usize> = Vec::<usize>::new();
 				for n in &q {
@@ -315,6 +313,7 @@ impl Automata{
 					
 					if !q_set.contains(&states) {
 						q_set.push(states.clone());
+						states.iter().for_each(|x| if self.accept_states.contains(x) {new_automata.accept_states.push(q_set.len()-1)});
 						new_node.transitions.insert(a, vec![q_set.len()-1]);
 						worklist.push(states.clone());
 					}
@@ -342,6 +341,104 @@ impl Automata{
 		
 
 	}
+
+	fn minimization(&self) -> Automata{
+		let no_accept_states: Vec<usize> = (0..self.states.len()).filter(|x: &usize| !self.accept_states.contains(x)).collect();
+		let mut t = Vec::<Vec<usize>>::from([self.accept_states.clone(), no_accept_states]);
+		let mut p_set = Vec::<Vec<usize>>::new();
+		let mut min_automata = Automata{
+			states: Vec::<Node>::new(),
+			alphabet: self.alphabet.clone(),
+			accept_states: Vec::<usize>::new(),
+		};
+
+		while t != p_set{
+			p_set = t.clone();
+			t.clear();
+			
+			for i in &p_set.clone(){
+				t.extend(self.split(i.clone(), p_set.clone()));
+			}
+		}
+
+		println!("t: {:?}", t);
+
+		
+		p_set.sort_by_key(|x| *x.iter().min().unwrap());
+		
+		for i in &p_set{
+			for j in i{
+				if self.accept_states.contains(j){
+					min_automata.accept_states.push(p_set.iter().position(|x| x.contains(j)).unwrap());
+					break;
+				}
+			}			
+			let mut new_node = Node{
+				transitions: HashMap::<String, Vec<usize>>::new(),
+				e_transitions: Vec::<usize>::new(),
+			};
+			let n_repre_trans = self.states[i[0]].transitions.clone();
+			for a in self.alphabet.clone(){
+				if n_repre_trans.contains_key(&a){
+					let pos = p_set.iter().position(|x| x.contains(&n_repre_trans.get(&a).unwrap()[0])).unwrap();
+					new_node.transitions.insert(a, vec![pos]);
+				}
+			}
+			min_automata.states.push(new_node);
+		}
+		
+
+		return min_automata;
+	} 
+
+	fn split(&self, s:Vec<usize>, p_set:Vec<Vec<usize>>) -> Vec<Vec<usize>>{
+		let mut set = Vec::<usize>::new();
+		for a in self.alphabet.clone(){
+			set.clear();
+			println!("letra: {}-----------", a);
+			let mut temp_p:i32 = -2;
+			for n in s.clone(){
+				println!("pset: {:?}", p_set);
+				let a_trans_set = self.get_next_at(n, &a);
+				println!("nodo: {}, temp: {},trans: {:?}", n, temp_p ,a_trans_set);
+				if a_trans_set == vec![]{
+					println!("nodo: {}",n);
+					if temp_p == -2{
+						temp_p = -1;
+					}
+					else if temp_p == -1{
+						temp_p = -1;
+					}
+					else{
+						let compl_set = s.into_iter().filter(|x| !set.contains(x)).collect();
+						return vec![set, compl_set];
+					}
+				}else{
+					let a_trans = a_trans_set[0];
+					for i in 0..p_set.len(){
+						if p_set[i].contains(&a_trans){
+							if temp_p == -2{
+								temp_p = i as i32;
+							}
+							else if temp_p == i as i32{
+								temp_p = i as i32;
+							}
+							else{
+								let compl_set = s.into_iter().filter(|x| !set.contains(x)).collect();
+								return vec![set, compl_set];
+							}
+							break;	
+						}
+					}
+				}
+				set.push(n);
+			}
+
+		}
+
+		return vec![s];
+	}
+
 	/******
 	fn regex_to_automaton(regex: &str) -> Automata{
 
@@ -469,6 +566,8 @@ impl Automata{
 			
 	}
 
+	
+
 					
 
 }
@@ -560,4 +659,14 @@ fn main(){
 	println!("{:?}", aut_dfa.states[1].transitions);
 	println!("{:?}", aut_dfa.states[2].transitions);
 	println!("{:?}", aut_dfa.states[3].transitions);
+	let aut_dfa = aut0.subset_construction();
+	println!("{:?}", aut_dfa.states[0].transitions);
+	println!("{:?}", aut_dfa.states[1].transitions);
+	println!("{:?}", aut_dfa.states[2].transitions);
+	println!("{:?}", aut_dfa.states[3].transitions);
+	println!("{:?}", aut_dfa.accept_states);
+	let aut_min = aut_dfa.minimization();
+	println!("{:?}", aut_min.states[0].transitions);
+	println!("{:?}", aut_min.states[1].transitions);
+	println!("{:?}", aut_min.accept_states);
 }

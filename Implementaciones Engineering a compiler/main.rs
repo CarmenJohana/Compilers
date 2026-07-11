@@ -4,6 +4,7 @@ struct Node{
     
 	transitions: HashMap<String, Vec<usize>>, // direct transitions by character
     e_transitions: Vec<usize>, // epsilon transitions
+	
 }
 
 impl Node {
@@ -194,6 +195,31 @@ impl Automata{
 		}
 	}
 
+	fn is_wrapped(regex: &str) -> bool {
+
+		if !regex.starts_with('(') || !regex.ends_with(')') {
+			return false;
+		}
+
+		let mut level = 0;
+
+		for (i, c) in regex.chars().enumerate() {
+
+			if c == '(' {
+				level += 1;
+			}
+
+			if c == ')' {
+				level -= 1;
+
+				if level == 0 && i != regex.len() - 1 {
+					return false;
+				}
+			}
+		}
+
+		true
+	}
 
 	fn split_top_level(regex: &str, op: char) -> Vec<String> {
 
@@ -221,13 +247,13 @@ impl Automata{
 		let regex = regex.trim();
 
 		// Union
-		let parts = split_top_level(regex, '|');
+		let parts = Self::split_top_level(regex, '|');
 		if parts.len() > 1 {
 
-			let mut aut = construir(&parts[0]);
+			let mut aut = Self::construir(&parts[0]);
 
 			for p in &parts[1..] {
-				aut = union(aut, construir(p));
+				aut = Self::union(aut, Self::construir(p));
 			}
 
 			return aut;
@@ -237,12 +263,12 @@ impl Automata{
 		if regex.ends_with('*') {
 
 			let inner = &regex[..regex.len() - 1];
-			return kleene(construir(inner));
+			return Self::kleene(Self::construir(inner));
 		}
 
 		// Parentheses
-		if regex.starts_with('(') && regex.ends_with(')') {
-			return construir(&regex[1..regex.len() - 1]);
+		if Self::is_wrapped(regex) {
+			return Automata::construir(&regex[1..regex.len()-1]);
 		}
 
 		// Concatenation
@@ -251,17 +277,17 @@ impl Automata{
 			let mut chars = regex.chars();
 			let first = chars.next().unwrap().to_string();
 
-			let mut aut = symbol_nfa(&first);
+			let mut aut = Self::symbol_nfa(&first);
 
 			for c in chars {
-				aut = concatenate(aut, symbol_nfa(&c.to_string()));
+				aut = Self::concatenate(aut, Self::symbol_nfa(&c.to_string()));
 			}
 
 			return aut;
 		}
 
 		// symbol
-		symbol_nfa(regex)
+		Self::symbol_nfa(regex)
 	}
 
 
@@ -296,7 +322,12 @@ impl Automata{
 				e_transitions: Vec::<usize>::new(),
 			};
 
+<<<<<<< Updated upstream
 			
+=======
+			q.iter().for_each(|x| if self.accept_states.contains(x) &&  !new_automata.accept_states.contains(x) {new_automata.accept_states.push(*x)});
+
+>>>>>>> Stashed changes
 			for a in self.alphabet.clone() {
 				let mut states: Vec<usize> = Vec::<usize>::new();
 				for n in &q {
@@ -582,6 +613,18 @@ return aut
 
 
 fn main(){
+	
+	// Testing regex-to-nfa construction
+	
+	let aut1  = Automata::construir("(a(b|c))");
+	
+	println!("{:?}", aut1.states[0].transitions);
+	println!("{:?}", aut1.states[1].transitions);
+	println!("{:?}", aut1.states[2].transitions);
+	println!("{:?}", aut1.states[3].transitions);
+
+	
+
 	
 	//-----------------------------------------------
 	//Estoy creando el automata del libro (a(b | c))
